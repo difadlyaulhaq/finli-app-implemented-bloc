@@ -1,13 +1,8 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:finli_app/theme/color.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:finli_app/bloc/crud/crud_bloc.dart';
-import 'package:finli_app/bloc/crud/crud_event.dart';
-import 'package:finli_app/bloc/crud/crud_state.dart';
-import 'package:finli_app/bloc/crud/crud_model.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -35,56 +30,6 @@ class _HomePageState extends State<HomePage> {
   ];
 
   @override
-  void initState() {
-    super.initState();
-    // Fetch transactions when the page loads
-    context.read<CrudBloc>().add(FetchTransactionsEvent());
-  }
-
-  String _calculateBalance(List<TransactionModel> transactions) {
-    double totalIncome = 0;
-    double totalExpense = 0;
-
-    for (var transaction in transactions) {
-      double amount = double.tryParse(transaction.amount.replaceAll('.', '').replaceAll(',', '')) ?? 0;
-      if (transaction.isIncome) {
-        totalIncome += amount;
-      } else {
-        totalExpense += amount;
-      }
-    }
-
-    double balance = totalIncome - totalExpense;
-    return _formatCurrency(balance);
-  }
-
-  String _calculateTotalIncome(List<TransactionModel> transactions) {
-    double totalIncome = 0;
-    for (var transaction in transactions) {
-      if (transaction.isIncome) {
-        double amount = double.tryParse(transaction.amount.replaceAll('.', '').replaceAll(',', '')) ?? 0;
-        totalIncome += amount;
-      }
-    }
-    return _formatCurrency(totalIncome);
-  }
-
-  String _calculateTotalExpense(List<TransactionModel> transactions) {
-    double totalExpense = 0;
-    for (var transaction in transactions) {
-      if (!transaction.isIncome) {
-        double amount = double.tryParse(transaction.amount.replaceAll('.', '').replaceAll(',', '')) ?? 0;
-        totalExpense += amount;
-      }
-    }
-    return _formatCurrency(totalExpense);
-  }
-
-  String _formatCurrency(double amount) {
-    return "Rp${amount.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}";
-  }
-
-  @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
 
@@ -93,7 +38,8 @@ class _HomePageState extends State<HomePage> {
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
-            context.read<CrudBloc>().add(FetchTransactionsEvent());
+            // Refresh functionality placeholder
+            await Future.delayed(const Duration(seconds: 1));
           },
           child: ListView(
             children: [
@@ -133,185 +79,111 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(height: 20),
 
               // BALANCE CARD SECTION
-              BlocBuilder<CrudBloc, CrudState>(
-                builder: (context, state) {
-                  if (state is FetchLoaded) {
-                    final balance = _calculateBalance(state.transactions);
-                    final income = _calculateTotalIncome(state.transactions);
-                    final expense = _calculateTotalExpense(state.transactions);
-
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: AppColors.blue,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Text(
-                                  "Total Balance",
-                                  style: GoogleFonts.plusJakartaSans(
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                const SizedBox(width: 2),
-                                const Icon(
-                                  Icons.keyboard_arrow_up_outlined,
-                                  size: 18,
-                                  color: Colors.white,
-                                ),
-                              ],
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: AppColors.blue,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            "Total Balance",
+                            style: GoogleFonts.plusJakartaSans(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
                             ),
-                            const SizedBox(height: 8),
-                            Text(
-                              balance,
-                              style: GoogleFonts.plusJakartaSans(
-                                color: Colors.white,
-                                fontSize: 28,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 45),
-                            Row(
-                              children: [
-                                CircleAvatar(
-                                  backgroundColor: AppColors.blueBackground,
-                                  radius: 12,
-                                  child: Icon(
-                                    Icons.arrow_downward,
-                                    color: AppColors.white,
-                                    size: 12,
-                                  ),
-                                ),
-                                const SizedBox(width: 5),
-                                Text(
-                                  "Income",
-                                  style: GoogleFonts.plusJakartaSans(
-                                    color: AppColors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                ),
-                                const Spacer(),
-                                CircleAvatar(
-                                  backgroundColor: AppColors.blueBackground,
-                                  radius: 12,
-                                  child: Icon(
-                                    Icons.arrow_upward,
-                                    color: AppColors.white,
-                                    size: 12,
-                                  ),
-                                ),
-                                const SizedBox(width: 5),
-                                Text(
-                                  "Expense",
-                                  style: GoogleFonts.plusJakartaSans(
-                                    color: AppColors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                Text(
-                                  income,
-                                  style: GoogleFonts.plusJakartaSans(
-                                    color: AppColors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                const Spacer(),
-                                Text(
-                                  expense,
-                                  style: GoogleFonts.plusJakartaSans(
-                                    color: AppColors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  } else if (state is FetchLoading) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Container(
-                        padding: const EdgeInsets.all(20),
-                        height: 200,
-                        decoration: BoxDecoration(
-                          color: AppColors.blue,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: const Center(
-                          child: CircularProgressIndicator(
+                          ),
+                          const SizedBox(width: 2),
+                          const Icon(
+                            Icons.keyboard_arrow_up_outlined,
+                            size: 18,
                             color: Colors.white,
                           ),
-                        ),
+                        ],
                       ),
-                    );
-                  } else if (state is FetchError) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: AppColors.blue,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Column(
-                          children: [
-                            Text(
-                              "Error loading balance",
-                              style: GoogleFonts.plusJakartaSans(
-                                color: Colors.white,
-                                fontSize: 16,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            ElevatedButton(
-                              onPressed: () {
-                                context.read<CrudBloc>().add(FetchTransactionsEvent());
-                              },
-                              child: const Text("Retry"),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }
-                  // Default fallback
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: AppColors.blue,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        "Loading...",
+                      const SizedBox(height: 8),
+                      Text(
+                        "Rp0",
                         style: GoogleFonts.plusJakartaSans(
                           color: Colors.white,
-                          fontSize: 16,
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                    ),
-                  );
-                },
+                      const SizedBox(height: 45),
+                      Row(
+                        children: [
+                          CircleAvatar(
+                            backgroundColor: AppColors.blueBackground,
+                            radius: 12,
+                            child: Icon(
+                              Icons.arrow_downward,
+                              color: AppColors.white,
+                              size: 12,
+                            ),
+                          ),
+                          const SizedBox(width: 5),
+                          Text(
+                            "Income",
+                            style: GoogleFonts.plusJakartaSans(
+                              color: AppColors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                          const Spacer(),
+                          CircleAvatar(
+                            backgroundColor: AppColors.blueBackground,
+                            radius: 12,
+                            child: Icon(
+                              Icons.arrow_upward,
+                              color: AppColors.white,
+                              size: 12,
+                            ),
+                          ),
+                          const SizedBox(width: 5),
+                          Text(
+                            "Expense",
+                            style: GoogleFonts.plusJakartaSans(
+                              color: AppColors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Text(
+                            "Rp0",
+                            style: GoogleFonts.plusJakartaSans(
+                              color: AppColors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const Spacer(),
+                          Text(
+                            "Rp0",
+                            style: GoogleFonts.plusJakartaSans(
+                              color: AppColors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
               ),
 
               // END BALANCE CARD SECTION
@@ -349,122 +221,25 @@ class _HomePageState extends State<HomePage> {
               ),
               const SizedBox(height: 10),
 
-              // Transactions List
-              BlocBuilder<CrudBloc, CrudState>(
-                builder: (context, state) {
-                  if (state is FetchLoaded) {
-                    if (state.transactions.isEmpty) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Card(
-                          color: AppColors.white,
-                          elevation: 0,
-                          child: Padding(
-                            padding: const EdgeInsets.all(20),
-                            child: Text(
-                              "No transactions yet",
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.plusJakartaSans(
-                                color: AppColors.black,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    }
-
-                    // Show only the latest 3 transactions
-                    final latestTransactions = state.transactions.take(3).toList();
-
-                    return Column(
-                      children: latestTransactions.map((transaction) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-                          child: Card(
-                            color: AppColors.white,
-                            elevation: 0,
-                            child: ListTile(
-                              leading: CircleAvatar(
-                                backgroundColor: transaction.isIncome
-                                    ? Colors.blue[100]
-                                    : Colors.red[100],
-                                child: Icon(
-                                  transaction.isIncome
-                                      ? Icons.arrow_downward
-                                      : Icons.arrow_upward,
-                                  color: transaction.isIncome ? Colors.blue : Colors.red,
-                                ),
-                              ),
-                              title: Text(
-                                transaction.title,
-                                style: GoogleFonts.plusJakartaSans(
-                                  color: AppColors.black,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              subtitle: Text(
-                                transaction.subtitle,
-                                style: GoogleFonts.plusJakartaSans(
-                                  color: AppColors.black,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w200,
-                                ),
-                              ),
-                              trailing: Text(
-                                "${transaction.isIncome ? '+' : '-'}Rp ${transaction.amount}",
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: transaction.isIncome ? Colors.green : Colors.red,
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    );
-                  } else if (state is FetchLoading) {
-                    return const Padding(
-                      padding: EdgeInsets.all(20),
-                      child: Center(
-                        child: CircularProgressIndicator(),
+              // Empty Transactions Placeholder
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Card(
+                  color: AppColors.white,
+                  elevation: 0,
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Text(
+                      "No transactions yet",
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.plusJakartaSans(
+                        color: AppColors.black,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
                       ),
-                    );
-                  } else if (state is FetchError) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Card(
-                        color: AppColors.white,
-                        elevation: 0,
-                        child: Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Column(
-                            children: [
-                              Text(
-                                "Error loading transactions",
-                                style: GoogleFonts.plusJakartaSans(
-                                  color: AppColors.black,
-                                  fontSize: 14,
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              ElevatedButton(
-                                onPressed: () {
-                                  context.read<CrudBloc>().add(FetchTransactionsEvent());
-                                },
-                                child: const Text("Retry"),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  }
-                  return const SizedBox.shrink();
-                },
+                    ),
+                  ),
+                ),
               ),
 
               // END OF LATEST TRANSACTIONS SECTION
