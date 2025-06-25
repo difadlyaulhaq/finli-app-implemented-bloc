@@ -2,6 +2,7 @@ import 'package:finli_app/pages/help_page.dart';
 import 'package:finli_app/pages/home_page.dart';
 import 'package:finli_app/pages/profile_page.dart';
 import 'package:finli_app/pages/statistic_page.dart';
+import 'package:finli_app/pages/add_transaction_page.dart'; // Import halaman baru
 import 'package:finli_app/theme/color.dart';
 import 'package:flutter/material.dart';
 import 'package:persistent_bottom_nav_bar_v2/persistent_bottom_nav_bar_v2.dart';
@@ -39,10 +40,17 @@ class MainPage extends StatelessWidget {
         icon: Icon(Icons.add_rounded),
         iconSize: 36,
         activeForegroundColor: AppColors.white,
-
         inactiveForegroundColor: AppColors.blue,
       ),
-      onPressed: (p0) {},
+      onPressed: (context) {
+        // Navigasi ke halaman Add Transaction
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const AddTransactionPage(),
+          ),
+        );
+      },
     ),
     PersistentTabConfig(
       screen: HelpPage(),
