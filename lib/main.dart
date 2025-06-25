@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:finli_app/bloc/crud/crud_bloc.dart';
 import 'package:finli_app/pages/home_page.dart';
 import 'package:finli_app/pages/login_page.dart';
 import 'package:finli_app/pages/main_page.dart';
@@ -23,7 +25,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-         BlocProvider(create: (_) => AuthBloc())
+         BlocProvider(create: (_) => AuthBloc()),
+         BlocProvider(
+          create: (_) => CrudBloc(firestore: FirebaseFirestore.instance),
+        ),
       ],
       child: MaterialApp(
           debugShowCheckedModeBanner: false,
