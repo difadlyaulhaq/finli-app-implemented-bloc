@@ -26,9 +26,7 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
          BlocProvider(create: (_) => AuthBloc()),
-         BlocProvider(
-          create: (_) => CrudBloc(firestore: FirebaseFirestore.instance),
-        ),
+        
       ],
       child: MaterialApp(
           debugShowCheckedModeBanner: false,
